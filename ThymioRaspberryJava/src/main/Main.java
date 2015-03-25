@@ -13,12 +13,12 @@ import ch.epfl.mobots.AsebaNetwork;
 import ch.epfl.mobots.Aseba.ThymioRemoteConnection;
 
 public class Main {
-	//time in seconds
 	private static final int CAPTURE_TIME = 2;
+	private int capturingSensor;
 	
 	private ThymioRemoteConnection controller;
 	
-	public Main() {
+	public Main(String[] args) {
 		try {
 			controller = thymioConnect();
 			
@@ -26,18 +26,29 @@ public class Main {
 			
 			ArrayList<Short> frontReadings = new ArrayList<Short>();
 			
-			long startTime = System.currentTimeMillis();
 			boolean exit = false;
 			
+			if(args.length == 0){
+				System.err.print("Nº of the sensor not specified on the arguments");
+				System.exit(0);
+			}
+				
+			capturingSensor = Integer.valueOf(args[0]);
+			
 			Scanner scanner = new Scanner(System.in);
-			System.out.print("Distance to the wall(cm): ");
+			System.out.print("Distance to wall (cm): ");
 			String distance = scanner.nextLine();
 			scanner.close();
 			
+			System.out.println("Capturing during " + CAPTURE_TIME + "s at a distance to the wall of (cm): ");
+			
+			long startTime = System.currentTimeMillis();
+			System.out.println("Starting Capture");
+			
 			while(!exit){
-				System.out.println("Starting Capture");
+				
 				List<Short> readings = controller.getProximitySensorValues();
-				frontReadings.add(readings.get(2));
+				frontReadings.add(readings.get(capturingSensor));
 				
 				double passedTime = (System.currentTimeMillis() - startTime) / 1000;
 				if(passedTime >= CAPTURE_TIME)
@@ -59,6 +70,8 @@ public class Main {
 					writer.close();
 			}
 			
+			System.out.println("File Saved");
+			System.exit(0);
 		} catch (DBusException e1) {
 			e1.printStackTrace();
 		}
@@ -81,7 +94,7 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
-		new Main();
+		new Main(args);
 	}
 	
 }
